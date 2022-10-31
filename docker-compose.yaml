@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:13.0-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  web:
+    build: ./university/
+    restart: always
+    ports:
+      - "80:8000"
+    volumes:
+      - ./university/:/app/
+      - shared_alias_data:/app/data/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  redis:
+    image: redis
+    restart: always
+    container_name: 'app_redis'
+    command: redis-server
+    ports:
+      - '6379:6379'
+    env_file:
+      - ./.env
+
+  celery:
+    restart: always
+    build: ./university/
+    container_name: 'app_celery'
+    command: celery -A university worker -B
+    volumes:
+      - .:/app/redis_volumes
+      - shared_alias_data:/app/data/
+    links:
+      - redis
+    depends_on:
+      - web
+    env_file:
+      - ./.env
+
+volumes:
+  shared_alias_data:
