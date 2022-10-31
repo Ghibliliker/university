@@ -25,7 +25,12 @@ Pandas
 ```
 docker-compose up -d --build
 ```
-5. Creating a superuser
+5. Apply migrations
+```
+docker-compose exec -it container_id bash python3 manage.py migrate
+```
+
+6. Creating a superuser
 ```
 docker-compose exec -it container_id bash python3 manage.py createsuperuser
 ```
